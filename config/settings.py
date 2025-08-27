@@ -39,8 +39,33 @@ INSTALLED_APPS = [
     "django.contrib.messages",
     "django.contrib.staticfiles",
     'rest_framework',
-    'olcha'
+    "rest_framework_simplejwt",
+    "rest_framework_simplejwt.token_blacklist",
+
+    'olcha',
+    'user_acc',
 ]
+
+REST_FRAMEWORK = {
+    'DEFAULT_AUTHENTICATION_CLASSES': [
+        'rest_framework_simplejwt.authentication.JWTAuthentication',
+    ],
+
+    'DEFAULT_PERMISSION_CLASSES': [
+        'rest_framework.permissions.IsAuthenticated',
+       ],
+}
+from datetime import timedelta
+
+SIMPLE_JWT = {
+    "ACCESS_TOKEN_LIFETIME": timedelta(minutes=60),   # access token muddati
+    "REFRESH_TOKEN_LIFETIME": timedelta(days=7),      # refresh token muddati
+    "ROTATE_REFRESH_TOKENS": False,                   # har safar yangilashda yangi refresh berish
+    "BLACKLIST_AFTER_ROTATION": True,                 # eski tokenni bloklash
+    "AUTH_HEADER_TYPES": ("Bearer",),                 # Authorization header => "Bearer <token>"
+}
+
+
 
 MIDDLEWARE = [
     "django.middleware.security.SecurityMiddleware",
@@ -127,3 +152,4 @@ MEDIA_ROOT = os.path.join(BASE_DIR, 'media')
 # https://docs.djangoproject.com/en/5.1/ref/settings/#default-auto-field
 
 DEFAULT_AUTO_FIELD = "django.db.models.BigAutoField"
+AUTH_USER_MODEL = 'user_acc.CustomUser'
