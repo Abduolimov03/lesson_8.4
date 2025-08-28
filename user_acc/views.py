@@ -1,15 +1,13 @@
-from django.shortcuts import render
-from .serializers import RegisterSerializer
-from rest_framework.decorators import api_view, permission_classes, APIView
-from rest_framework.validators import ValidationError
-from rest_framework_simplejwt.tokens import RefreshToken
 from django.contrib.auth import authenticate
+from django.shortcuts import render
 from rest_framework.generics import GenericAPIView
 from .models import CustomUser
 from rest_framework.response import Response
+from .serializers import RegisterSerializer
 from rest_framework import permissions, status
-
-# Create your views here.
+from rest_framework.decorators import api_view, permission_classes, APIView
+from rest_framework.validators import ValidationError
+from rest_framework_simplejwt.tokens import RefreshToken
 
 
 class RegisterApi(GenericAPIView):
@@ -18,11 +16,31 @@ class RegisterApi(GenericAPIView):
     serializer_class = RegisterSerializer
 
     def post(self, request):
+        # data = request.data
+        # password2 = data['password2']
+        # password = data['password']
+        # if password != password2:
+        #     raise ValidationError('Parollar mos emas')
+        #
+        # username = data['username']
+        # email = data['email']
+        #
+        # CustomUser.objects.create_user(
+        #     username=username,
+        #     password=password,
+        #     email=email
+        # )
+        # return Response(
+        #     {
+        #         'msg':'Royxatdan otildi',
+        #         'status':status.HTTP_201_CREATED
+        #     }
+        # )
         serializer = self.get_serializer(data=request.data)
         if serializer.is_valid():
             serializer.save()
-            return Response({'msg':'Siz royxatdan otdingiz', 'status':status.HTTP_201_CREATED})
-        return Response({'err':serializer.errors, 'status':status.HTTP_400_BAD_REQUEST})
+            return Response({'msg': 'Siz royxatdan otdingiz', 'status': status.HTTP_201_CREATED})
+        return Response({'err': serializer.errors, 'status': status.HTTP_400_BAD_REQUEST})
 
 
 @api_view(['GET', ])
@@ -39,18 +57,20 @@ class LoginApi(APIView):
         password = data['password']
 
         if not CustomUser.objects.filter(email=email).exists():
-            return Response({
-                'msg':'Bunaqa loginli foydalanuvchi mavjud emas',
-                'status':status.HTTP_400_BAD_REQUEST
-            })
+            return Response(
+                {
+                    'err':'Bunaqa loginli foydalanuvchi mavjud emas',
+                    'status':status.HTTP_400_BAD_REQUEST
+                }
+            )
 
-        user = authenticate(email=email, password=password)
+        user = authenticate(request, email=email, password=password)
         token = RefreshToken.for_user(user)
 
         data = {
-            'refresh': str(token),
-            'access': str(token.access_token),
-            'status': status.HTTP_200_OK
+            'refresh':str(token),
+            'access':str(token.access_token),
+            'status':status.HTTP_200_OK
         }
         return Response(data=data)
 
@@ -61,7 +81,7 @@ class LogoutApi(APIView):
         try:
             token = RefreshToken(data['refresh'])
             token.blacklist()
-            return Response({"msg": 'chiqdingiz', "status": status.HTTP_200_OK})
+            return Response({"msg":'chiqdingiz', "status":status.HTTP_200_OK})
         except Exception as e:
             return Response({
                 "err": str(e),
@@ -70,14 +90,13 @@ class LogoutApi(APIView):
 
 class TokenRefresh(APIView):
     permission_classes = [permissions.AllowAny]
-
     def post(self, request):
         data = request.data
         try:
             token = RefreshToken(data['refresh'])
             return Response({
-                "access":str(token.access_token),
-                'status':status.HTTP_201_CREATED
+                "access": str(token.access_token),
+                "status":status.HTTP_201_CREATED
             })
         except Exception as e:
             return Response({
