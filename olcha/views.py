@@ -3,6 +3,7 @@ from rest_framework.generics import ListAPIView, RetrieveAPIView
 from .models import Category, Product
 from .serializers import CategorySerializer, ProductSerializer, ProductDetailSerializer
 from rest_framework import permissions
+from user_acc.permissions import WorkingHoursPermission
 # Create your views here.
 
 
@@ -26,12 +27,14 @@ class SubcategoryListApiView(ListAPIView):
 
 
 class ProductListApiView(ListAPIView):
+    permission_classes = [WorkingHoursPermission]
     queryset = Product.objects.all()
     serializer_class = ProductSerializer
-    permission_classes = [permissions.AllowAny]
+
 
 
 class ProductDetailApiView(RetrieveAPIView):
+    permission_classes = [WorkingHoursPermission]
     queryset = Product.objects.all()
     serializer_class = ProductDetailSerializer
 
