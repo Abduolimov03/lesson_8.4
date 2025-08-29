@@ -1,8 +1,6 @@
-from tkinter.tix import IMAGE
 
 from django.db import models
-from django.utils.text import slugify
-
+from decimal import Decimal
 
 # Create your models here.
 class Category(models.Model):
@@ -29,20 +27,37 @@ class Category(models.Model):
 
 
 class Product(models.Model):
-    title = models.CharField(max_length=255)
-    slug = models.SlugField(unique=True)
-    category = models.ForeignKey(Category, related_name="products", on_delete=models.CASCADE)
-    image = models.ImageField(upload_to="product/images/")
-    desc = models.TextField(blank=True, null=True)
-    price = models.DecimalField(decimal_places=2, max_digits=10)
-    created_at = models.DateTimeField(auto_now_add=True)
+    name = models.CharField(max_length=250)
+    description = models.TextField(blank=True, null=True)
+    price = models.DecimalField(max_digits=10, decimal_places=2)
+    stock = models.PositiveIntegerField(default=1)
+    discount = models.PositiveIntegerField(default=0)
+    category = models.ForeignKey(Category,
+                                 on_delete=models.SET_NULL,
+                                 null=True,
+                                 blank=True,
+                                 related_name='products')
 
-    def save(self, *args, **kwargs):
-        if not self.slug:
-            self.slug = slugify(self.title)
-        super().save(*args, **kwargs)
-
+    @property
+    def discounted_price(self):
+        if self.discount:
+            return self.price * Decimal(1 - self.discount / 100)
+        return self.price
 
     def __str__(self):
-        return self.title
+        return self.name
 
+
+
+class Image(models.Model):
+    image = models.ImageField(upload_to='product/images/')
+    product = models.ForeignKey(Product,
+                                on_delete=models.SET_NULL,
+                                related_name='images',
+                                null=True,
+                                blank=True
+                                )
+    is_primary = models.BooleanField(default=False)
+
+    def __str__(self):
+        return self.product.name

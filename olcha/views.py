@@ -1,7 +1,7 @@
 from django.shortcuts import render
 from rest_framework.generics import ListAPIView, RetrieveAPIView
 from .models import Category, Product
-from .serializers import CategorySerializer, ProductSerializer
+from .serializers import CategorySerializer, ProductSerializer, ProductDetailSerializer
 from rest_framework import permissions
 # Create your views here.
 
@@ -33,7 +33,5 @@ class ProductListApiView(ListAPIView):
 
 class ProductDetailApiView(RetrieveAPIView):
     queryset = Product.objects.all()
-    serializer_class = ProductSerializer
-    lookup_field = 'slug'
-
+    serializer_class = ProductDetailSerializer
 
